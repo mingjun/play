@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>BST test</title>
+<style type="text/css">
+.node.root {
+	width: 100%;
+}
+.node {
+	width: 50%;
+	box-sizing: border-box;
+	display: inline-block;
+	font-size: 0;
+	vertical-align: top;
+}
+
+.node:first-child {
+	border: 0px dashed orange;
+	border-left-width: 1px;
+	border-top-width: 1px;
+}
+
+.data {
+	border: 0px dashed orange;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	display: block;
+	width:100%;
+	overflow:hidden;
+	font-size: 16px;
+	text-align: center;
+}
+
+</style>
+</head>
+<body>
+Binary Search Tree
+<div class="root node">
+	<span class="data">root</span>
+	<div class="node left">
+		<span class="data">A</span>
+		<div class="node left">
+			<span class="data">AA</span>
+		</div>
+		<div class="node right">
+			<span class="data">AB</span>
+		</div>
+	</div>
+	<div class="node right test">
+		<span class="data">B</span>
+		<div class="node left">
+		</div>
+		<div class="node right">
+		<span class="data">BB</span>
+		</div>
+	</div>
+	
+</div>
+
+
+<div style="display: none">
+
+<div class="node template">
+	<span class="data">test</span>
+	<div class="node left"></div>
+	<div class="node right"></div>
+</div>
+
+</div>
+<label for="countNode">node count</label>
+<input id="countNode" type="number" value="20"/>
+<button onclick="r()">build</button>
+<button onclick="relay()">beautify</button>
+
+<script type="text/javascript">
+function $ (selector, node) {
+	switch(typeof node) {
+	case "undefined":
+		node = document;
+	default:
+		return node ? node.querySelector(selector) : null;
+	}
+}
+function $$ (selector, node) {
+	switch(typeof node) {
+	case "undefined":
+		node = document;
+	default:
+		return node ? node.querySelectorAll(selector) : null;
+	}
+}
+
+var template = $(".node.template");
+var root = $(".root");
+var c = 0;
+function fillNode(node, data) {
+	if(node && node.parentNode) {
+		var t = template.cloneNode();
+		t.className = node.className;
+		node.parentNode.replaceChild(t, node);
+		getSub(t, "data").innerHTML = data;
+		return t;
+	}
+}
+
+function getSub(node, name) {
+	if(node && node.childElementCount === 3) {
+		var lookup = {
+				data: 0,
+				left: 1,
+				right: 2
+		};
+		return node.children[lookup[name]];
+	}
+}
+
+var t = root;
+var text = "root";
+function test() {
+	
+	for(var i=0;i<3; i++) {
+		t = fillNode(t, text+" "+i);
+		var dir = Math.random() < 0.5 ? "left" : "right";
+		if(Math.random() < 0.8)  { //full level
+			var other = dir === "left" ? "right" : "left";
+			fillNode(getSub(t, other), other+" "+(i+1));
+		}
+
+		text = dir;
+		var x = getSub(t, dir);
+		t = x;
+	}
+	root = $(".root");
+}
+
+function iterate(node) {
+	var data = getSub(node, "data");
+	if(!data) {
+		return 0;
+	} else {
+		var l = getSub(node, "left");
+		var r = getSub(node, "right");
+		var x = iterate(l);
+		var y = iterate(r);
+		var m = Math.max(x+y, 1);
+		
+		var p;
+		if(x === 0) p = 30;
+		else if(x === m) p = 70;
+		else p= Math.round(x/m * 100);
+		l.dataset["w"]=p + "%";
+		r.dataset["w"]=(100 - p) + "%";
+		
+		l.style.width = p + "%";
+		r.style.width = (100 - p) + "%";
+		//data.innerHTML = m;
+		return m;
+	}
+}
+function relay(){
+	var root = $(".root");
+	var m = iterate(root);
+}
+
+function Node(v) {
+	this.value = v;
+	this.left = null;
+	this.right = null;
+}
+function addNode(node, v) {
+	var diff = node.value - v;
+	if(diff === 0) {
+		return;
+	} else if(diff > 0) {
+		if(!node.left) {
+			node.left = new Node(v);
+		} else {
+			addNode(node.left, v);
+		}
+	}
+	else {
+		if(!node.right) {
+			node.right = new Node(v);
+		} else {
+			addNode(node.right, v);
+		}
+	}
+}
+function toDom(dataNode, domNode) {
+	domNode = fillNode(domNode, dataNode.value);
+	if(dataNode.left) {
+		toDom(dataNode.left, getSub(domNode, "left"));
+	}
+	if(dataNode.right) {
+		toDom(dataNode.right, getSub(domNode, "right"));
+	}
+}
+function r() {
+	var size = document.getElementById("countNode").value;
+	var buff = new Array(size);
+	for(var i=0;i<size;i++) {
+		buff[i] = Math.round(Math.random()*100);
+	}
+	var root = new Node(buff[0]);
+	for(var i=1;i<size;i++) {
+		addNode(root, buff[i]);
+	}
+	toDom(root, $(".root"));
+	
+}
+</script>
+</body>
+</html>
